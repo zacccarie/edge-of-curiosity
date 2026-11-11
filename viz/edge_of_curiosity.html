@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edge of Curiosity — la curiosité cherche-t-elle le bord du chaos ?</title>
+<style>
+  :root{
+    --bg:#0c0e12;
+    --ink:#e7eaef; --dim:#8b94a3; --faint:#3a414d; --grid:#1c2129;
+    --crit:#5fb3b3;     /* teal     — pointillé */
+    --lp:#e0a64f;       /* ambre    — plein (héros) */
+    --dwell:#9b8cc4;    /* violet   — tireté */
+    --agent:#d76faf;    /* magenta  — agent curieux */
+    --novelty:#d76f6f;  /* corail   — agent nouveauté */
+    --edge:#cdd4df;     /* bord — ligne de construction */
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--bg);overflow:hidden;color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  #stage{position:fixed;inset:0}
+  svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  svg.panning{cursor:grabbing}
+  /* tracés vectoriels — flat, pas d'ombre, pas de halo */
+  .grid{stroke:var(--grid);stroke-width:1;fill:none;shape-rendering:geometricPrecision}
+  .axis{stroke:var(--faint);stroke-width:1.25;fill:none}
+  .strand{fill:none;stroke:var(--dim);stroke-width:.55;opacity:.08}
+  .env{fill:var(--dim);opacity:.07}
+  .envline{fill:none;stroke:var(--dim);stroke-width:1.1;opacity:.6}
+  .area{opacity:.08}
+  .curve{fill:none;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+  .c-crit{stroke:var(--crit);stroke-dasharray:1.5 3}
+  .c-lp{stroke:var(--lp)}
+  .c-dwell{stroke:var(--dwell);stroke-dasharray:7 4}
+  .edge{stroke:var(--edge);stroke-width:1;stroke-dasharray:4 4;fill:none;opacity:.85}
+  .edgefloor{stroke:var(--edge);stroke-width:1;fill:none;opacity:.5}
+  .traj{fill:none;stroke-width:1;stroke-dasharray:2 3;opacity:.5}
+  .tick{fill:var(--dim);font-size:11px;letter-spacing:.04em}
+  .tick-n{fill:var(--dim);font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .slabel{fill:var(--ink);font-size:12px;font-weight:500;letter-spacing:.02em}
+  .reveal{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
+    animation:draw 1.3s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @media (prefers-reduced-motion:reduce){.reveal{animation:none;stroke-dashoffset:0}}
+
+  /* HUD — école suisse : grotesque neutre, aplat, hairlines, pas d'ombre */
+  .hud{position:fixed;z-index:5;pointer-events:none}
+  #title{top:30px;left:34px;border-top:1px solid var(--faint);padding-top:10px;max-width:54ch}
+  #title h1{font-size:15px;font-weight:700;letter-spacing:.02em}
+  #title .sub{margin-top:3px;font-size:12px;font-weight:400;color:var(--dim);letter-spacing:.01em}
+  #meta{top:30px;right:34px;text-align:right;border-top:1px solid var(--faint);padding-top:10px}
+  #meta .k{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--dim)}
+  #meta table{margin-top:8px;margin-left:auto;border-collapse:collapse}
+  #meta td{font-size:12px;padding:2px 0 2px 16px;color:var(--dim)}
+  #meta td.n{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+  #verdict{bottom:30px;right:34px;text-align:right;font-size:11px;letter-spacing:.02em;line-height:1.8}
+  #verdict .a{color:var(--agent)}#verdict .b{color:var(--novelty)}
+  #legend{bottom:30px;left:34px;border-top:1px solid var(--faint);padding-top:12px}
+  #legend .row{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11px;color:var(--dim)}
+  #legend .row b{color:var(--ink);font-weight:500}
+  #legend svg{width:26px;height:8px;flex:none}
+  #legend .mk{width:11px;height:11px;flex:none;border:1.25px solid;border-radius:50%}
+  #hint{bottom:12px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--faint);
+    letter-spacing:.06em;text-transform:lowercase}
+  @media (max-width:760px){#meta,#verdict{display:none}}
+</style>
+</head>
+<body>
+<div id="stage"><svg id="svg" preserveAspectRatio="xMidYMid meet"></svg></div>
+
+<div id="title" class="hud">
+  <h1>Edge of Curiosity</h1>
+  <div class="sub">la curiosité cherche-t-elle le bord du chaos ? — substrat : carte logistique x ↦ r·x(1−x)</div>
+</div>
+
+<div id="meta" class="hud">
+  <div class="k">logistique — confirmation</div>
+  <table>
+    <tr><td>bord du chaos r_c</td><td class="n">3.571</td></tr>
+    <tr><td>argmax progrès d'apprentissage</td><td class="n">3.545</td></tr>
+    <tr><td>spearman(LP, criticalité)</td><td class="n">+0.51</td></tr>
+  </table>
+</div>
+
+<div id="verdict" class="hud">
+  <div class="a">agent curiosité → le bord</div>
+  <div class="b">agent nouveauté → le chaos</div>
+</div>
+
+<div id="legend" class="hud">
+  <div class="row"><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" stroke="#5fb3b3" stroke-width="1.8" stroke-dasharray="1.5 3"/></svg><span><b>criticalité</b> — susceptibilité</span></div>
+  <div class="row"><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" stroke="#e0a64f" stroke-width="1.8"/></svg><span><b>progrès d'apprentissage</b> — apprenabilité</span></div>
+  <div class="row"><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" stroke="#9b8cc4" stroke-width="1.8" stroke-dasharray="7 4"/></svg><span><b>séjour de l'agent curieux</b></span></div>
+  <div class="row"><span class="mk" style="border-color:#d76faf"></span><span><b>agent curiosité</b> (learning progress)</span></div>
+  <div class="row"><span class="mk" style="border-color:#d76f6f"></span><span><b>agent nouveauté</b> (erreur brute)</span></div>
+</div>
+
+<div id="hint" class="hud">molette : zoom — glisser : déplacer — double-clic : réinitialiser</div>
+
+<script>
+/* ===== Données réelles — run v3, substrat logistique (results_v3.json) ===== */
+const DATA={
+  thetas:[3.4,3.4207,3.4414,3.4621,3.4828,3.5034,3.5241,3.5448,3.5655,3.5862,3.6069,3.6276,3.6483,3.669,3.6897,3.7103,3.731,3.7517,3.7724,3.7931,3.8138,3.8345,3.8552,3.8759,3.8966,3.9172,3.9379,3.9586,3.9793,4.0],
+  theta_c:3.5708,
+  crit:[0.8156,0.9041,0.9834,0.9098,0.6155,0.2004,0.7999,1.0,0.9536,0.8418,0.8147,0.0,0.6652,0.5798,0.512,0.4974,0.4611,0.4874,0.4405,0.3793,0.3921,0.4928,0.7637,0.3543,0.2925,0.2555,0.2518,0.1818,0.1348,0.0183],
+  lp:[0.7084,0.6219,0.5491,0.56,0.7032,0.8047,0.9017,1.0,0.784,0.801,0.6096,0.795,0.8611,0.6689,0.3199,0.3167,0.327,0.3053,0.2563,0.3023,0.335,0.2379,0.2622,0.3792,0.374,0.292,0.2991,0.2837,0.2859,0.0],
+  dwell:[0.8636,0.3182,0.4545,0.3182,0.4091,0.9545,0.4545,0.8636,0.8182,0.2727,0.6818,0.6364,1.0,0.6364,0.3636,0.1364,0.3636,0.1364,0.1364,0.2727,0.9545,0.5909,0.2727,0.0455,0.0,0.3182,0.3636,0.3636,0.5,0.8182]
+};
+const R0=3.4, R1=4.0;
+const uOf = r => (r-R0)/(R1-R0);
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* ===== projection isométrique (vraie iso 30°, sans perspective ni ombrage) ===== */
+const Lr=1020, Lz=82, Lh=250, COS=Math.cos(Math.PI/6), SIN=Math.sin(Math.PI/6);
+const VBIF=-1.55, V0=0, V1=1, V2=2, VRAIL=2.95;
+const cx=360, cy=380;
+function P(u,v,w){ return [ cx + u*Lr*COS - v*Lz*COS,
+                            cy + u*Lr*SIN + v*Lz*SIN - w*Lh ]; }
+const fmt = p => p[0].toFixed(1)+','+p[1].toFixed(1);
+const poly = pts => 'M'+pts.map(fmt).join(' L');
+
+/* ===== spline Catmull-Rom échantillonnée dans (u,w), puis projetée ===== */
+function cr(a,b,c,d,t){const t2=t*t,t3=t2*t;
+  return .5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);}
+function smoothUW(us,ws,seg=18){
+  const out=[],n=us.length;
+  for(let i=0;i<n-1;i++){
+    const i0=Math.max(0,i-1),i3=Math.min(n-1,i+2);
+    for(let k=0;k<seg;k++){const t=k/seg;
+      out.push([cr(us[i0],us[i],us[i+1],us[i3],t),cr(ws[i0],ws[i],ws[i+1],ws[i3],t)]);}
+  }
+  out.push([us[n-1],ws[n-1]]);return out;
+}
+
+const ns='http://www.w3.org/2000/svg';
+const layers={grid:[],bif:[],profiles:[],edge:[],agents:[],labels:[]};
+function el(tag,attrs,key){const e=document.createElementNS(ns,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]); layers[key].push(e); return e;}
+function text(x,y,str,cls,anchor){const t=el('text',{x,y,class:cls,'text-anchor':anchor||'start'},'labels');t.textContent=str;return t;}
+
+/* ---- plan de sol isométrique (grille technique) ---- */
+(function floor(){
+  for(let i=0;i<=6;i++){const u=i/6;
+    el('path',{class:'grid',d:poly([P(u,VBIF,0),P(u,VRAIL,0)])},'grid');}
+  [VBIF,V0,V1,V2,VRAIL].forEach(v=>el('path',{class:'grid',d:poly([P(0,v,0),P(1,v,0)])},'grid'));
+  el('path',{class:'axis',d:poly([P(0,VRAIL,0),P(1,VRAIL,0)])},'grid');
+  [3.4,3.5,3.6,3.7,3.8,3.9,4.0].forEach(r=>{const u=uOf(r),p=P(u,VRAIL,0),p2=P(u,VRAIL+0.12,0);
+    el('path',{class:'axis',d:poly([p,p2])},'grid');
+    text(p2[0],p2[1]+14,r.toFixed(1),'tick-n','middle');});
+  const rl=P(.5,VRAIL+0.5,0); text(rl[0],rl[1]+8,'paramètre de contrôle  r','tick','middle');
+})();
+
+/* ===== diagramme de bifurcation — vectoriel, net (panneau v=VBIF) ===== */
+(function bifurcation(){
+  const nR=360, skip=500, strands=26, keep=64;
+  const rs=[],minA=[],maxA=[],traj=[];
+  for(let s=0;s<strands;s++) traj.push([]);
+  for(let i=0;i<nR;i++){
+    const r=R0+(R1-R0)*i/(nR-1); rs.push(r);
+    let x=0.5; for(let k=0;k<skip;k++) x=r*x*(1-x);
+    let mn=1,mx=0; const vals=[];
+    for(let k=0;k<keep;k++){x=r*x*(1-x); vals.push(x); if(x<mn)mn=x; if(x>mx)mx=x;}
+    minA.push(mn); maxA.push(mx);
+    for(let s=0;s<strands;s++) traj[s].push(vals[s]);
+  }
+  const u=i=>uOf(rs[i]);
+  const up=rs.map((r,i)=>P(u(i),VBIF,maxA[i]));
+  const lo=rs.map((r,i)=>P(u(i),VBIF,minA[i]));
+  el('path',{class:'env',d:poly(up)+' L'+lo.slice().reverse().map(fmt).join(' L')+' Z'},'bif');
+  el('path',{class:'envline',d:poly(up)},'bif');
+  el('path',{class:'envline',d:poly(lo)},'bif');
+  for(let s=0;s<strands;s++){
+    el('path',{class:'strand',d:poly(rs.map((r,i)=>P(u(i),VBIF,traj[s][i])))},'bif');
+  }
+  const oa=P(uOf(3.46),VBIF,1.14); text(oa[0],oa[1],'ordre','tick','middle');
+  const ca=P(uOf(3.93),VBIF,1.14); text(ca[0],ca[1],'chaos','tick','middle');
+})();
+
+/* ===== profils (3 lanes) — spline + aire aplat ===== */
+function profile(values,lane,cls,colorVar){
+  const us=DATA.thetas.map(uOf), sm=smoothUW(us,values);
+  const top=sm.map(p=>P(p[0],lane,p[1]));
+  const base=sm.map(p=>P(p[0],lane,0));
+  el('path',{class:'area',fill:`var(${colorVar})`,
+    d:poly(top)+' L'+base.slice().reverse().map(fmt).join(' L')+' Z'},'profiles');
+  return el('path',{class:'curve '+cls,d:poly(top)},'profiles');
+}
+const cCrit  = profile(DATA.crit ,V0,'c-crit','--crit');
+const cLp    = profile(DATA.lp   ,V1,'c-lp','--lp');
+const cDwell = profile(DATA.dwell,V2,'c-dwell','--dwell');
+
+/* ===== ligne de construction : le bord ===== */
+(function edge(){
+  const uc=uOf(DATA.theta_c);
+  el('path',{class:'edgefloor',d:poly([P(uc,VBIF,0),P(uc,VRAIL,0)])},'edge');
+  el('path',{class:'edge',d:poly([P(uc,V1,0),P(uc,V1,1.12)])},'edge');
+  const lp=P(uc,V1,1.12); text(lp[0]+8,lp[1]-4,'bord du chaos  r ≈ 3.571','slabel','start');
+})();
+
+/* ===== agents (marqueurs techniques + trajectoire) ===== */
+function agentNode(colorVar){
+  const g=document.createElementNS(ns,'g');
+  const ring=document.createElementNS(ns,'circle');
+  ring.setAttribute('r',7);ring.setAttribute('fill','none');
+  ring.setAttribute('stroke',`var(${colorVar})`);ring.setAttribute('stroke-width','1.4');
+  const dot=document.createElementNS(ns,'circle');
+  dot.setAttribute('r',2);dot.setAttribute('fill',`var(${colorVar})`);
+  g.appendChild(ring);g.appendChild(dot);layers.agents.push(g);return g;
+}
+const railPos=u=>P(u,VRAIL,0);
+el('path',{class:'traj',stroke:'var(--agent)',d:poly([railPos(0),railPos(uOf(DATA.theta_c))])},'agents');
+el('path',{class:'traj',stroke:'var(--novelty)',d:poly([railPos(0),railPos(1)])},'agents');
+const curious=agentNode('--agent'), novelty=agentNode('--novelty');
+const pCurious=railPos(uOf(DATA.theta_c)), pNovelty=railPos(1);
+const lc=railPos(uOf(DATA.theta_c)); text(lc[0],lc[1]+24,'curiosité','tick','middle');
+const lnv=railPos(1); text(lnv[0]-2,lnv[1]+24,'nouveauté','tick','middle');
+
+/* ===== assemblage + viewBox auto ===== */
+const svg=document.getElementById('svg');
+const view=document.createElementNS(ns,'g'); view.id='view'; svg.appendChild(view);
+['grid','bif','profiles','edge','agents','labels'].forEach(k=>{
+  const g=document.createElementNS(ns,'g');g.id='L-'+k;
+  layers[k].forEach(n=>g.appendChild(n));view.appendChild(g);});
+const bb=view.getBBox(),m=46;
+svg.setAttribute('viewBox',`${bb.x-m} ${bb.y-m} ${bb.width+2*m} ${bb.height+2*m}`);
+
+/* ===== zoom (molette / pinch) + pan (glisser), centrés sur le curseur ===== */
+let k=1,tx=0,ty=0,pinchPrev=0,dragging=false,lx=0,ly=0; const ptr=new Map();
+const KMIN=0.45, KMAX=16;
+function apply(){ view.setAttribute('transform',`translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(4)})`); }
+function toContent(cx,cy){ return new DOMPoint(cx,cy).matrixTransform(view.getScreenCTM().inverse()); }
+function zoomAt(cx,cy,factor){
+  const k2=Math.max(KMIN,Math.min(KMAX,k*factor)); if(k2===k)return;
+  const c=toContent(cx,cy); tx+=(k-k2)*c.x; ty+=(k-k2)*c.y; k=k2; apply();
+}
+svg.addEventListener('wheel',e=>{ e.preventDefault(); zoomAt(e.clientX,e.clientY,Math.exp(-e.deltaY*0.0016)); },{passive:false});
+svg.addEventListener('pointerdown',e=>{ svg.setPointerCapture(e.pointerId);
+  ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptr.size===1){ dragging=true; lx=e.clientX; ly=e.clientY; svg.classList.add('panning'); } });
+svg.addEventListener('pointermove',e=>{ if(!ptr.has(e.pointerId))return;
+  ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptr.size>=2){ const a=[...ptr.values()]; const d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);
+    if(pinchPrev) zoomAt((a[0].x+a[1].x)/2,(a[0].y+a[1].y)/2,d/pinchPrev);
+    pinchPrev=d; dragging=false; return; }
+  if(dragging){ const sV=svg.getScreenCTM().a;
+    tx+=(e.clientX-lx)/sV; ty+=(e.clientY-ly)/sV; lx=e.clientX; ly=e.clientY; apply(); } });
+function relPtr(e){ ptr.delete(e.pointerId); if(ptr.size<2)pinchPrev=0;
+  if(ptr.size===0){ dragging=false; svg.classList.remove('panning'); } }
+svg.addEventListener('pointerup',relPtr); svg.addEventListener('pointercancel',relPtr);
+svg.addEventListener('dblclick',e=>{ e.preventDefault(); k=1;tx=0;ty=0;apply(); });
+
+/* ===== animation : tracé des courbes + glissée des agents (flat, sans halo) ===== */
+function reveal(path,delay){const len=path.getTotalLength();
+  path.style.setProperty('--len',len);path.style.animationDelay=delay+'ms';path.classList.add('reveal');}
+function place(g,p){g.setAttribute('transform',`translate(${p[0]},${p[1]})`);}
+if(reduce){ place(curious,pCurious); place(novelty,pNovelty); }
+else{
+  reveal(cCrit,0); reveal(cLp,160); reveal(cDwell,320);
+  const p0=railPos(0); place(curious,p0); place(novelty,p0);
+  const T0=performance.now(), DUR=2100, DELAY=500, ease=t=>1-Math.pow(1-t,3);
+  const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+  (function step(now){
+    let t=Math.max(0,Math.min(1,(now-T0-DELAY)/DUR)); const e=ease(t);
+    place(curious,lerp(p0,pCurious,e)); place(novelty,lerp(p0,pNovelty,e));
+    if(t<1) requestAnimationFrame(step);
+  })(T0);
+}
+</script>
+</body>
+</html>

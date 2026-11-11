@@ -1,0 +1,580 @@
+{
+  "interpreters": [
+    "inertial",
+    "affine",
+    "fourier",
+    "local",
+    "fsm"
+  ],
+  "biases": [
+    "marche/inertie",
+    "lineaire global",
+    "harmonique",
+    "localite",
+    "motif discret"
+  ],
+  "classes": [
+    "iid",
+    "periodic",
+    "ar1",
+    "randomwalk",
+    "ar3_osc",
+    "noisy_ar2",
+    "logistic",
+    "tar",
+    "xor3",
+    "rbn"
+  ],
+  "kinds": [
+    "aucune",
+    "periodique",
+    "lineaire-court",
+    "integre",
+    "lineaire-long",
+    "oscillant-bruite",
+    "non-lineaire-1D",
+    "affine-morceaux",
+    "compositionnel-binaire",
+    "booleen-reseau"
+  ],
+  "interp": [
+    [
+      0.0,
+      0.8571254277793325,
+      0.7975620186877764,
+      0.981854781537361,
+      0.10924262668553889,
+      0.5590309499928783,
+      0.0,
+      0.46346211898410355,
+      0.0,
+      0.2
+    ],
+    [
+      0.0,
+      0.989648565244418,
+      0.8069190347544302,
+      0.9815983769569817,
+      0.46838081789574504,
+      0.8683404159230651,
+      0.4400840765189506,
+      0.535751137962308,
+      0.0,
+      1.0
+    ],
+    [
+      0.0,
+      0.9919834767498097,
+      0.0,
+      0.0,
+      0.0,
+      0.00035816694889017063,
+      0.0,
+      0.0,
+      1.0,
+      0.4
+    ],
+    [
+      0.0,
+      0.994041368857164,
+      0.7388746376749726,
+      0.6478782576796953,
+      0.3366590381958541,
+      0.8045787086932956,
+      0.9992659880895692,
+      0.4851481548194032,
+      1.0,
+      1.0
+    ],
+    [
+      0.0,
+      0.7444100944889016,
+      0.5305469473381657,
+      0.0,
+      0.2859921170903779,
+      0.5477671350942745,
+      0.6631579626238511,
+      0.416289272117945,
+      0.0,
+      1.0
+    ]
+  ],
+  "interp_max": [
+    [
+      0.0,
+      0.8571254277793325,
+      0.7975620186877764,
+      0.981854781537361,
+      0.10924262668553889,
+      0.5590309499928783,
+      0.0,
+      0.46346211898410355,
+      0.0,
+      0.2
+    ],
+    [
+      0.0,
+      0.989648565244418,
+      0.8069190347544302,
+      0.9815983769569817,
+      0.46838081789574504,
+      0.8683404159230651,
+      0.4400840765189506,
+      0.535751137962308,
+      0.0,
+      1.0
+    ],
+    [
+      0.0,
+      0.9915123474393092,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.4
+    ],
+    [
+      0.0,
+      0.9946891318894615,
+      0.7655842221912978,
+      0.6099882232757944,
+      0.39752452830052654,
+      0.7956764284997926,
+      0.9984738963500307,
+      0.5422393100377192,
+      1.0,
+      1.0
+    ],
+    [
+      0.0,
+      0.7444100944889016,
+      0.5305469473381657,
+      0.0,
+      0.2859921170903779,
+      0.5477671350942745,
+      0.6631579626238511,
+      0.416289272117945,
+      0.0,
+      1.0
+    ]
+  ],
+  "interp_surrogate": [
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.2
+    ],
+    [
+      0.0015188456655371274,
+      0.0,
+      0.0007618598506530683,
+      0.0009287771090234597,
+      0.0,
+      0.0,
+      0.0009246884445623937,
+      0.0003584807315284433,
+      0.0,
+      0.2
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.2
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.2
+    ],
+    [
+      0.0005083012605098913,
+      7.05195766802058e-05,
+      0.0,
+      0.0002843421820999392,
+      0.0014554546141543278,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.2
+    ]
+  ],
+  "interp_sem": [
+    [
+      0.0,
+      0.00017361472735460316,
+      0.01818826950565925,
+      0.0037287356718042237,
+      0.04307314649231237,
+      0.0034078310617929003,
+      0.0,
+      0.05741813036772125,
+      0.0,
+      0.1788854381999832
+    ],
+    [
+      0.0,
+      0.00015619402109765394,
+      0.01619082777008102,
+      0.0036401254733629,
+      0.01659400443526725,
+      0.0037614574994835957,
+      0.011303518500389428,
+      0.040354041686741574,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0006668932230485025,
+      0.0,
+      0.0,
+      0.0,
+      0.0003203542580048457,
+      0.0,
+      0.0,
+      0.0,
+      0.21908902300206645
+    ],
+    [
+      0.0,
+      0.00021022962095245022,
+      0.021166437084000324,
+      0.15428109328072198,
+      0.022262771403071983,
+      0.004615309344106673,
+      0.00023970951290155042,
+      0.048171479170515855,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0024250797357631792,
+      0.02562855651946394,
+      0.0,
+      0.020648968165432803,
+      0.009865856893982929,
+      0.0076819050352318315,
+      0.028553503953756887,
+      0.0,
+      0.0
+    ]
+  ],
+  "bidirectional": [
+    {
+      "A": "inertial",
+      "B": "fourier",
+      "A_wins": [
+        "ar1",
+        "randomwalk",
+        "ar3_osc",
+        "noisy_ar2",
+        "tar"
+      ],
+      "B_wins": [
+        "periodic",
+        "xor3",
+        "rbn"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "inertial",
+      "B": "local",
+      "A_wins": [
+        "randomwalk"
+      ],
+      "B_wins": [
+        "periodic",
+        "ar3_osc",
+        "noisy_ar2",
+        "logistic",
+        "xor3",
+        "rbn"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "inertial",
+      "B": "fsm",
+      "A_wins": [
+        "periodic",
+        "ar1",
+        "randomwalk"
+      ],
+      "B_wins": [
+        "ar3_osc",
+        "logistic",
+        "rbn"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "affine",
+      "B": "fourier",
+      "A_wins": [
+        "ar1",
+        "randomwalk",
+        "ar3_osc",
+        "noisy_ar2",
+        "logistic",
+        "tar",
+        "rbn"
+      ],
+      "B_wins": [
+        "xor3"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "affine",
+      "B": "local",
+      "A_wins": [
+        "randomwalk",
+        "ar3_osc"
+      ],
+      "B_wins": [
+        "logistic",
+        "xor3"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "affine",
+      "B": "fsm",
+      "A_wins": [
+        "periodic",
+        "ar1",
+        "randomwalk",
+        "ar3_osc",
+        "noisy_ar2",
+        "tar"
+      ],
+      "B_wins": [
+        "logistic"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "fourier",
+      "B": "fsm",
+      "A_wins": [
+        "periodic",
+        "xor3"
+      ],
+      "B_wins": [
+        "ar1",
+        "ar3_osc",
+        "noisy_ar2",
+        "logistic",
+        "tar",
+        "rbn"
+      ],
+      "budget_robust": true
+    }
+  ],
+  "bidirectional_robust": [
+    {
+      "A": "inertial",
+      "B": "fourier",
+      "A_wins": [
+        "ar1",
+        "randomwalk",
+        "ar3_osc",
+        "noisy_ar2",
+        "tar"
+      ],
+      "B_wins": [
+        "periodic",
+        "xor3",
+        "rbn"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "inertial",
+      "B": "local",
+      "A_wins": [
+        "randomwalk"
+      ],
+      "B_wins": [
+        "periodic",
+        "ar3_osc",
+        "noisy_ar2",
+        "logistic",
+        "xor3",
+        "rbn"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "inertial",
+      "B": "fsm",
+      "A_wins": [
+        "periodic",
+        "ar1",
+        "randomwalk"
+      ],
+      "B_wins": [
+        "ar3_osc",
+        "logistic",
+        "rbn"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "affine",
+      "B": "fourier",
+      "A_wins": [
+        "ar1",
+        "randomwalk",
+        "ar3_osc",
+        "noisy_ar2",
+        "logistic",
+        "tar",
+        "rbn"
+      ],
+      "B_wins": [
+        "xor3"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "affine",
+      "B": "local",
+      "A_wins": [
+        "randomwalk",
+        "ar3_osc"
+      ],
+      "B_wins": [
+        "logistic",
+        "xor3"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "affine",
+      "B": "fsm",
+      "A_wins": [
+        "periodic",
+        "ar1",
+        "randomwalk",
+        "ar3_osc",
+        "noisy_ar2",
+        "tar"
+      ],
+      "B_wins": [
+        "logistic"
+      ],
+      "budget_robust": true
+    },
+    {
+      "A": "fourier",
+      "B": "fsm",
+      "A_wins": [
+        "periodic",
+        "xor3"
+      ],
+      "B_wins": [
+        "ar1",
+        "ar3_osc",
+        "noisy_ar2",
+        "logistic",
+        "tar",
+        "rbn"
+      ],
+      "budget_robust": true
+    }
+  ],
+  "bidirectional_surrogate": [],
+  "cycles": [
+    [
+      "inertial",
+      "fourier",
+      "affine"
+    ],
+    [
+      "inertial",
+      "fourier",
+      "fsm"
+    ],
+    [
+      "inertial",
+      "local",
+      "affine"
+    ],
+    [
+      "inertial",
+      "local",
+      "fourier"
+    ],
+    [
+      "inertial",
+      "local",
+      "fsm"
+    ],
+    [
+      "inertial",
+      "fsm",
+      "affine"
+    ],
+    [
+      "inertial",
+      "fsm",
+      "fourier"
+    ],
+    [
+      "affine",
+      "fourier",
+      "fsm"
+    ],
+    [
+      "affine",
+      "local",
+      "fourier"
+    ],
+    [
+      "affine",
+      "local",
+      "fsm"
+    ],
+    [
+      "affine",
+      "fsm",
+      "fourier"
+    ]
+  ],
+  "universal": [],
+  "H1": true,
+  "H2": true,
+  "H3": true,
+  "H4": true,
+  "H5": true,
+  "verdict": "NO FREE LUNCH PLEIN (bidirectionnel)",
+  "seconds": 7.3
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No Free Lunch plein — biais orthogonaux, domination intransitive</title>
+<style>
+  :root{
+    --bg:#0c0e12; --ink:#e7eaef; --dim:#8b94a3; --faint:#3a414d; --grid:#1c2129; --cell0:#141821;
+    --amber:#e0a64f;    /* crossover (paire mutuellement non-dominante) */
+    --violet:#9b8cc4;   /* cycle intransitif — héros */
+    --grey:#5b6470;     /* domination uni-directionnelle */
+    --teal:#5fb3b3;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--bg);overflow:hidden;color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  #stage{position:fixed;inset:0}
+  svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  svg.panning{cursor:grabbing}
+  .cell{shape-rendering:crispEdges;stroke:var(--bg);stroke-width:1}
+  .cellv{font-size:11px;font-variant-numeric:tabular-nums;text-anchor:middle}
+  .node{fill:#10141b;stroke:var(--dim);stroke-width:1.25}
+  .nname{fill:var(--ink);font-size:13px;font-weight:600;text-anchor:middle}
+  .nbias{fill:var(--dim);font-size:9.5px;text-anchor:middle;letter-spacing:.02em}
+  .edge-cross{stroke:var(--amber);stroke-width:1.1;fill:none;opacity:.55}
+  .edge-dom{stroke:var(--grey);stroke-width:1.1;fill:none;opacity:.7}
+  .edge-cyc{stroke:var(--violet);stroke-width:2.2;fill:none}
+  .elab{fill:var(--violet);font-size:10px;text-anchor:middle;font-variant-numeric:tabular-nums}
+  .rl{fill:var(--ink);font-size:11.5px;font-weight:500;text-anchor:end}
+  .rlb{fill:var(--dim);font-size:9px;text-anchor:end}
+  .cl{fill:var(--ink);font-size:10.5px;text-anchor:start}
+  .clk{fill:var(--dim);font-size:8.5px;text-anchor:start}
+  .ring{fill:none;stroke:var(--violet);stroke-width:1.4}
+  .axlab{fill:var(--dim);font-size:10px;letter-spacing:.04em}
+  .secT{fill:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.16em}
+  .hud{position:fixed;z-index:5;pointer-events:none}
+  #title{top:28px;left:34px;border-top:1px solid var(--faint);padding-top:10px;max-width:62ch}
+  #title h1{font-size:15px;font-weight:700;letter-spacing:.02em}
+  #title .sub{margin-top:3px;font-size:12px;font-weight:400;color:var(--dim)}
+  #meta{top:28px;right:34px;text-align:right;border-top:1px solid var(--faint);padding-top:10px}
+  #meta .k{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--dim)}
+  #meta table{margin-top:8px;margin-left:auto;border-collapse:collapse}
+  #meta td{font-size:12px;padding:2px 0 2px 16px;color:var(--dim)}
+  #meta td.n{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+  #verdict{bottom:26px;right:34px;text-align:right;font-size:11px;line-height:1.85}
+  #verdict .v{color:var(--violet);font-weight:600}
+  #legend{bottom:26px;left:34px;border-top:1px solid var(--faint);padding-top:12px}
+  #legend .row{display:flex;align-items:center;gap:10px;margin-top:7px;font-size:11px;color:var(--dim)}
+  #legend .row b{color:var(--ink);font-weight:500}
+  #legend svg{width:30px;height:10px;flex:none}
+  #hint{bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--faint);letter-spacing:.06em}
+  @media (max-width:880px){#meta,#verdict{display:none}}
+</style>
+</head>
+<body>
+<div id="stage"><svg id="svg" preserveAspectRatio="xMidYMid meet"></svg></div>
+
+<div id="title" class="hud">
+  <h1>No Free Lunch, plein</h1>
+  <div class="sub">5 interprètes à biais <b>orthogonaux</b> (non emboîtés) — la domination est <b style="color:var(--violet)">intransitive</b> : aucun puits, aucune source, donc aucune hiérarchie. L'optimum est purement le couplage (biais × classe).</div>
+</div>
+
+<div id="meta" class="hud">
+  <div class="k">structure de domination</div>
+  <table>
+    <tr><td>paires se croisant (crossover)</td><td class="n" id="m-cross">7</td></tr>
+    <tr><td>cycles intransitifs</td><td class="n">11</td></tr>
+    <tr><td>interprète universel</td><td class="n">aucun</td></tr>
+  </table>
+</div>
+
+<div id="verdict" class="hud">
+  <div class="v">NO FREE LUNCH PLEIN</div>
+  <div>aucun biais ne domine, jamais</div>
+</div>
+
+<div id="legend" class="hud">
+  <div class="row"><svg viewBox="0 0 30 10"><line x1="2" y1="5" x2="28" y2="5" stroke="var(--violet)" stroke-width="2.2"/><polygon points="28,5 22,2 22,8" fill="var(--violet)"/></svg><span><b>cycle intransitif</b> A→B→C→A (chacun bat le suivant)</span></div>
+  <div class="row"><svg viewBox="0 0 30 10"><line x1="4" y1="5" x2="26" y2="5" stroke="var(--amber)" stroke-width="1.1"/><polygon points="26,5 21,2.5 21,7.5" fill="var(--amber)"/><polygon points="4,5 9,2.5 9,7.5" fill="var(--amber)"/></svg><span><b>crossover</b> — chacun gagne sur une classe</span></div>
+  <div class="row"><svg viewBox="0 0 30 10"><line x1="2" y1="5" x2="26" y2="5" stroke="var(--grey)" stroke-width="1.1"/><polygon points="26,5 21,2.5 21,7.5" fill="var(--grey)"/></svg><span>domination uni-directionnelle (généraliste fort)</span></div>
+</div>
+
+<div id="hint" class="hud">molette : zoom · glisser : pan</div>
+
+<script>
+const DATA = {"interpreters": ["inertial", "affine", "fourier", "local", "fsm"], "biases": ["marche/inertie", "linéaire global", "harmonique", "localité", "motif discret"], "classes": ["iid", "periodic", "ar1", "randomwalk", "ar3_osc", "noisy_ar2", "logistic", "tar", "xor3", "rbn"], "kinds": ["aucune", "périodique", "linéaire-court", "intégré", "linéaire-long", "oscillant-bruité", "non-linéaire-1D", "affine-morceaux", "compositionnel", "booléen-réseau"], "interp": [[0.0, 0.86, 0.8, 0.98, 0.11, 0.56, 0.0, 0.46, 0.0, 0.2], [0.0, 0.99, 0.81, 0.98, 0.47, 0.87, 0.44, 0.54, 0.0, 1.0], [0.0, 0.99, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.4], [0.0, 0.99, 0.74, 0.65, 0.34, 0.8, 1.0, 0.49, 1.0, 1.0], [0.0, 0.74, 0.53, 0.0, 0.29, 0.55, 0.66, 0.42, 0.0, 1.0]],
+  "cycle": ["inertial","fourier","affine"], "cycle_classes":["randomwalk","xor3","noisy_ar2"]};
+
+const NI=DATA.interpreters.length, NC=DATA.classes.length, MARG=0.10;
+const SVGNS='http://www.w3.org/2000/svg';
+function el(t,a,x){const e=document.createElementNS(SVGNS,t);for(const k in a)e.setAttribute(k,a[k]);if(x!=null)e.textContent=x;return e;}
+function lerp(a,b,t){return a+(b-a)*t}
+const C0=[20,24,33],C1=[224,166,79];
+function ramp(v){v=Math.max(0,Math.min(1,v));return `rgb(${Math.round(lerp(C0[0],C1[0],v))},${Math.round(lerp(C0[1],C1[1],v))},${Math.round(lerp(C0[2],C1[2],v))})`;}
+
+const svg=document.getElementById('svg'); svg.setAttribute('viewBox','0 0 1400 760');
+const defs=el('defs');
+[['ah-amber','var(--amber)'],['ah-grey','var(--grey)'],['ah-violet','var(--violet)']].forEach(([id,c])=>{
+  const m=el('marker',{id,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});
+  m.appendChild(el('path',{d:'M0,0 L10,5 L0,10 z',fill:c})); defs.appendChild(m);});
+svg.appendChild(defs);
+const scene=el('g',{id:'scene'}); svg.appendChild(scene);
+
+// ---------- relation de domination ----------
+const M=DATA.interp;
+function beats(a,b){ for(let c=0;c<NC;c++) if(M[a][c]-M[b][c]>MARG) return true; return false; }
+function winClass(a,b){ let best=-1,bc=-1; for(let c=0;c<NC;c++){const d=M[a][c]-M[b][c]; if(d>best){best=d;bc=c;}} return DATA.classes[bc]; }
+
+// ---------- graphe de domination (pentagone) ----------
+const cx=350, cy=372, R=212, nr=40;
+const pos=DATA.interpreters.map((n,i)=>{const a=-Math.PI/2+i*2*Math.PI/NI; return {x:cx+R*Math.cos(a),y:cy+R*Math.sin(a),n,i};});
+const cycIdx=DATA.cycle.map(n=>DATA.interpreters.indexOf(n));
+const cycSet=new Set(); for(let k=0;k<cycIdx.length;k++){cycSet.add(cycIdx[k]+'>'+cycIdx[(k+1)%cycIdx.length]);}
+
+function edgePts(a,b,bow){
+  const A=pos[a],B=pos[b]; const dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy);
+  const ux=dx/L,uy=dy/L; const sx=A.x+ux*nr, sy=A.y+uy*nr, ex=B.x-ux*nr, ey=B.y-uy*nr;
+  const mx=(sx+ex)/2 - uy*bow, my=(sy+ey)/2 + ux*bow;     // point de contrôle bombé
+  return {sx,sy,ex,ey,mx,my};
+}
+// arêtes génériques (paires non dans le cycle)
+for(let a=0;a<NI;a++)for(let b=a+1;b<NI;b++){
+  if(cycSet.has(a+'>'+b)||cycSet.has(b+'>'+a)) continue;
+  const ab=beats(a,b), ba=beats(b,a);
+  if(!ab&&!ba) continue;
+  const p=edgePts(a,b,26);
+  if(ab&&ba){ // crossover : double flèche ambre
+    const e=el('path',{class:'edge-cross',d:`M${p.sx},${p.sy} Q${p.mx},${p.my} ${p.ex},${p.ey}`,
+      'marker-end':'url(#ah-amber)','marker-start':'url(#ah-amber)'}); scene.appendChild(e);
+  } else { // domination uni-dir grise
+    const src=ab?a:b, dst=ab?b:a, q=edgePts(src,dst,26);
+    scene.appendChild(el('path',{class:'edge-dom',d:`M${q.sx},${q.sy} Q${q.mx},${q.my} ${q.ex},${q.ey}`,'marker-end':'url(#ah-grey)'}));
+  }
+}
+// cycle intransitif (héros, violet, étiqueté par la classe-de-victoire)
+for(let k=0;k<cycIdx.length;k++){
+  const a=cycIdx[k], b=cycIdx[(k+1)%cycIdx.length], p=edgePts(a,b,40);
+  scene.appendChild(el('path',{class:'edge-cyc',d:`M${p.sx},${p.sy} Q${p.mx},${p.my} ${p.ex},${p.ey}`,'marker-end':'url(#ah-violet)'}));
+  scene.appendChild(el('text',{class:'elab',x:p.mx,y:p.my-4},DATA.cycle_classes[k]));
+}
+// nœuds
+pos.forEach(p=>{
+  scene.appendChild(el('circle',{class:'node',cx:p.x,cy:p.y,r:nr}));
+  scene.appendChild(el('text',{class:'nname',x:p.x,y:p.y-1},p.n));
+  scene.appendChild(el('text',{class:'nbias',x:p.x,y:p.y+13},DATA.biases[p.i]));
+});
+scene.appendChild(el('text',{class:'secT',x:cx,y:cy+R+58,'text-anchor':'middle'},'graphe de domination — cyclique'));
+
+// ---------- matrice (droite) ----------
+const MX=760, MY=176, cw=58, ch=50, gap=4;
+DATA.classes.forEach((c,j)=>{
+  const x=MX+j*cw+3;
+  scene.appendChild(el('text',{class:'cl',x:x,y:MY-26,transform:`rotate(-30 ${x} ${MY-26})`},c));
+  scene.appendChild(el('text',{class:'clk',x:x,y:MY-15,transform:`rotate(-30 ${x} ${MY-15})`},DATA.kinds[j]));
+});
+for(let i=0;i<NI;i++){
+  const y=MY+i*ch;
+  scene.appendChild(el('text',{class:'rl',x:MX-12,y:y+ch/2-2},DATA.interpreters[i]));
+  scene.appendChild(el('text',{class:'rlb',x:MX-12,y:y+ch/2+10},DATA.biases[i]));
+  for(let j=0;j<NC;j++){
+    const v=M[i][j], x=MX+j*cw;
+    scene.appendChild(el('rect',{class:'cell',x:x,y:y,width:cw-gap,height:ch-gap,fill:ramp(v)}));
+    scene.appendChild(el('text',{class:'cellv',x:x+(cw-gap)/2,y:y+ch/2+3,fill:v>0.5?'#0c0e12':'#6c7686'},v.toFixed(2)));
+  }
+}
+// foyer (argmax) par colonne -> anneau violet
+for(let j=0;j<NC;j++){
+  let bi=0; for(let i=0;i<NI;i++) if(M[i][j]>M[bi][j]) bi=i;
+  if(M[bi][j]<0.05) continue;
+  scene.appendChild(el('rect',{class:'ring',x:MX+j*cw+2,y:MY+bi*ch+2,width:cw-gap-2,height:ch-gap-2,rx:2}));
+}
+scene.appendChild(el('text',{class:'secT',x:MX,y:MY+NI*ch+22},'matrice interp (R² un-pas) — anneau = foyer de la classe'));
+scene.appendChild(el('text',{class:'axlab',x:MX,y:MY+NI*ch+40},'chaque classe a un foyer différent · aucune ligne ne domine la matrice'));
+
+// ---------- pan / zoom ----------
+let t={x:0,y:0,k:1}; const apply=()=>scene.setAttribute('transform',`translate(${t.x},${t.y}) scale(${t.k})`);
+svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect(),vb=svg.viewBox.baseVal;
+  const px=(e.clientX-r.left)/r.width*vb.width, py=(e.clientY-r.top)/r.height*vb.height;
+  const f=e.deltaY<0?1.12:1/1.12, nk=Math.max(.5,Math.min(6,t.k*f));
+  t.x=px-(px-t.x)*(nk/t.k);t.y=py-(py-t.y)*(nk/t.k);t.k=nk;apply();},{passive:false});
+let drag=null;
+svg.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,tx:t.x,ty:t.y};svg.classList.add('panning');svg.setPointerCapture(e.pointerId);});
+svg.addEventListener('pointermove',e=>{if(!drag)return;const r=svg.getBoundingClientRect(),vb=svg.viewBox.baseVal;
+  t.x=drag.tx+(e.clientX-drag.x)/r.width*vb.width;t.y=drag.ty+(e.clientY-drag.y)/r.height*vb.height;apply();});
+svg.addEventListener('pointerup',()=>{drag=null;svg.classList.remove('panning');});
+</script>
+</body>
+</html>
